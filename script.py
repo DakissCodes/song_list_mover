@@ -1,15 +1,15 @@
-######
-# song mover
+
 '''
-1. Get songs in file, turn into a string
-2. Possible convert the string to match song name
-3. Once each song can match, move song in a specific folder
+A script I used to locate missing files in iTunes by matching the names then copying them through shutil module.
 '''
+
+import re
 import os
 import shutil
 from string import ascii_letters
 
-
+# function that replaces spaces and special characters with underscore (_) 
+ 
 def spec_char_replacer(list_replace,list_append):
 
     for song in list_replace:
@@ -18,72 +18,75 @@ def spec_char_replacer(list_replace,list_append):
                 song = song.replace(song[letter],"_")
         list_append.append(song)
         
-
-
-# getting the song names in file
-song_list = [] # song names of daily tunes v2 playlist
-song_list_two = [] # song names of daily tunes v2 playlist
+# removes blank element in the song name lists (due to spaces)        
+        
+def space_remover(name_list):
+    for word in name_list:
+        if word == '':
+            name_list.pop(name_list.index(word))
+            
+song_list = [] # song names of songs I want to locate
+song_list_two = [] # song names of the playlist where the songs are
 
 
 with open('C:\\Users\\ASUS\\song_list\\daily_tunes_song_list.txt', 'r') as f:
     contents = f.readlines()
     print(contents)
 
-spec_char_replacer(contents,song_list)
+spec_char_replacer(contents,song_list) # append the song names to the list
 
 
-daily_tunes_dir = os.listdir('C:\\Users\\ASUS\\daily_tunes')
+daily_tunes_dir = os.listdir('C:\\Users\\ASUS\\daily_tunes') # lists the song names in the playlist
 
 new_song = ''
 
 for song in daily_tunes_dir:
 
-    newsong = song.replace(".mp3","")
-    song_list_two.append(newsong)
+    newsong = song.replace(".mp3","") # remove ..mp3 extension in name
+    song_list_two.append(newsong) 
 
 
 
-'''
-replace all special characters in song with (_) 
-this will hopefully match each song. 
-'''
+song_one = [] # song to be located in playlist
+song_two = [] # song to match 
 
+true_count = 0 # match count
+false_count = 0 # numbers of songs that didn't match 
 
-#for song in song_list:
-#    print(song)
-#    if song in song_list_two:
-#        print("True! Song is in song_list_two")
-#    else:
-#        print('False! Not in song_list_two')
-
-def space_remover(name_list):
-    for word in name_list:
-        if word == '':
-            name_list.pop(name_list.index(word))
-#
-import re
-
-original_song_names = []
-song_one = []
-song_two = []
+folder_dir = 'C:\\Users\\ASUS\\daily_tunes\\' 
 
 for song_name in song_list:
-    print(song_name)
-    song_one = re.split(r"_+", song_name) # words of the song_name in a list
+    
+    song_one = re.split(r"_+", song_name) # name of the song to be located
+    print(song_name + '\n')
     space_remover(song_one)
     bool = False
+    
     while True:
-        for song in song_list_two:
-            song_two = re.split(r"_+", song) # words of the song in a list
+        
+        for song in song_list_two: # loops through songs in the playlist to see if it matches
+            song_two = re.split(r"_+", song) 
             space_remover(song_two)
             
-            if song_one == song_two:
+            if song_one == song_two: 
                 bool = True
-                break
+                
+                print('source: ' + folder_dir + song + '.mp3')
+                print('destination: ' + folder_dir + 'daily_tunes_copy')
+            
+                dest = shutil.copy(folder_dir + song + '.mp3', folder_dir + 'daily_tunes_copy') # copies the file to a folder
+                print("file copied successfully!")
+
         if not bool:
-            print('False')
+            
+            print('DID NOT MATCH _______________________________________________________________________________') # allows you to see songs that cannot be located / did not match name
+            false_count += 1
+            
         elif bool:
-            print('True')
+            true_count += 1
+            
         break
                
+print(str(true_count) + '<-- matched songs')
+print(str(false_count) + '<-- unmatched songs')
 
